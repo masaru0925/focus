@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>JSONP 動作確認　by 口座情報登録、表示</title>
+	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="js/form2js.js"></script>
+	<script type="text/javascript" src="js/jquery.toObject.js"></script>
+</head>
+
+<body>
+
+<div id="contact_form">
+<form action="#">
+  <fieldset>
+    <label for="口座ID">口座ID</label>
+    <input type="text" name="口座ID" id="口座ID" size="30" value=""  />
+    <input type="button" name="表示ボタン" class="button" id="口座情報表示ボタン" value="口座情報表示" />
+  </fieldset>
+</form>
+</div>
+<div id="message"></div>
+<div id="表示_ID"></div>
+<div id="表示_口座番号"></div>
+
+<div id="post口座_form_div">
+<form action="#" name="口座情報登録フォーム" id="口座情報登録フォーム"> <!-- 日本語がダメみたい -->
+	<fieldset>
+
+
+		<label for="データ基準日">データ基準日</label>
+		<input type="text" name="データ基準日" id="データ基準日" value="20140504" size="8"/><br>
+		<label for="国コード">国コード</label>
+		<input type="text" name="国コード" id="国コード" value="00000" /><br>
+		<label for="金融機関コード">金融機関コード</label>
+		<input type="text" name="金融機関コード" id="金融機関コード" value="181" /><br>
+		<label for="店番">店番</label>
+		<input type="text" name="店番" id="店番" value="100" /><br>
+		<label for="口座番号">口座番号（10）</label>
+		<input type="text" name="口座番号" id="口座番号" value="100"/><br>
+		<label for="口座科目">口座科目</label>
+		<input type="text" name="口座科目コード.コード" id="口座科目コード" value="21"/><br>
+		<label for="当行フラグ">当行フラグ</label>
+		<input type="text" name="当行フラグ" id="当行フラグ" value="1" /><br>
+		<label for="解約フラグ">解約フラグ</label>
+		<input type="text" name="解約フラグ" id="解約フラグ" value="0" /><br>
+
+		<input type="button" name="登録ボタン" class="button" id="口座情報登録ボタン" value="口座情報登録" /><br>
+	</fieldset>
+</form>
+</div>
+
+
+<script type="text/javascript">
+$(function() {  
+
+	var url_3 = 'http://localhost:8080/focus/webresources/focus.entity.口座'; 
+	$("#口座情報登録ボタン").click(function() {
+		// フォームを取得
+		var json = $("#口座情報登録フォーム").toObject({mode: 'first'});
+
+    		$.post(url_3, JSON.stringify(json));
+		/*
+		$.post(url_3, JSON.stringify(json), function(data, text_status){
+			console.log("success! " +text_status);
+		}, function(request, text_status, error_thrown){
+			console.log("failed! " +text_status+"\n"+error_thrown);
+		});
+		*/
+		
+
+/* 
+ * $.post("http://foobar", {a : foo, b : bar}, function(data, text_status) { 
+ *     // 成功した場合
+ * }, function(request, text_status, error_thrown) {
+ *     // 失敗した場合
+ * });
+ */
+
+
+	});
+
+	$("#口座情報表示ボタン").click(function() {
+		var url_1_org = 'http://localhost:8080/focus/webresources/focus.entity.口座/';
+		var url_1 = url_1_org + $("#口座ID").val();
+		var url_1_jsonp = url_1_org +"jsonp/" + $("#口座ID").val();
+		var url_1_callback = url_1_jsonp +"?callback=?";
+		/**
+		 *	$.ajax(options)
+		 *	==  $.get(url, data, callback, "json") //ajaxをラッピング
+		 *	==  $.getJSON(url, [data], [callback]) //getをラッピング
+		 * 	ただし$.ajaxであればnow loadingやエラーハンドリングなど細かいことが出来る
+		 */
+/**/
+		$.getJSON(url_1, function(data){
+			console.log(url_1+"\n");
+			showResponse2(data);
+		});
+/**/
+/*
+		$.ajax({
+			type: "GET",
+			//url: url_1,
+			url: url_1_callback,
+			data: {},
+			async:true,
+			contentType: "application/json; charset=utf-8",
+			dataType: "jsonp",
+			jsonp: 'callback',
+			success: function(data) {
+				showResponse2(data);
+			},
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				alert("ERROR!!\n"+XMLHttpRequest +"\n"+textStatus+"\n"+errorThrown);
+			},
+			beforeSend: function (XMLHttpRequest) {
+				$("#message").empty();
+				$("#message").append("<blink>NOW LOADING</blink>");
+						//show loading
+			},
+			complete: function (XMLHttpRequest, textStatus) {
+					//hide loading
+			}
+		});
+
+*/
+	});
+});
+
+function showResponse2 (data) {
+	$("#表示_ID").empty();
+	$("#表示_口座番号").empty();
+	$("#表示_ID").text(data.id);
+	$("#表示_口座番号").text(data.口座番号);
+}
+
+$.extend({
+/* 
+ * $.post("http://foobar", {a : foo, b : bar}, function(data, text_status) { 
+ *     // 成功した場合
+ * }, function(request, text_status, error_thrown) {
+ *     // 失敗した場合
+ * });
+ */
+	"post" : function (url, data, success, error) {
+		error = error || function() {}; 
+		return $.ajax({
+			url : url,
+			data : data,
+			success : success,
+			contentType: "application/json; charset=utf-8",
+			type : "POST",
+			cache : false,
+			error : error,
+			dataType : "json"
+		});
+	},
+	"del" : function (url, data, success, error) { 
+		error = error || function() {};
+		return $.ajax({
+			"url" : url,
+			"data" : data,
+			"success" : success,
+			"type" : "DELETE",
+			"cache" : false,
+			"error" : error,
+			"dataType" : "json"
+		});
+	}
+});
+
+
+
+</script>
+
+</body>
+</html>
